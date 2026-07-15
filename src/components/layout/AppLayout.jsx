@@ -32,7 +32,11 @@ export function AppLayout({
         // `clip` (not `hidden`) doesn't make this a scroll container, so the
         // page still scrolls on the document and the sticky header keeps working.
         overflow: 'clip',
-        maxWidth: '100vw',
+        // Use 100% (not 100vw): 100vw includes the vertical scrollbar width, so
+        // it's wider than the real content area once the scrollbar gutter is
+        // reserved. That mismatch shifts the centered content column sideways
+        // when page/queue height changes toggle scroll state.
+        maxWidth: '100%',
       }}
     >
       {/* Skip link: first focusable element, hidden until focused, lets
