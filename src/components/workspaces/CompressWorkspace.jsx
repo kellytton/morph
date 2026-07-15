@@ -92,6 +92,7 @@ export function CompressWorkspace({ selection, onChangeFormat }) {
                 onFiles={handleFiles}
                 accept={accept}
                 hint={`Drop a ${getFormat(format).label.toUpperCase()} to shrink it — format stays the same`}
+                headingLevel="h1"
               />
             </Box>
           </Fade>

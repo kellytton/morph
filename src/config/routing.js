@@ -14,9 +14,15 @@ import {
   DEFAULT_MERGE,
   MERGE_MENU,
   convertItemToConversion,
+  getFormat,
 } from './conversions'
 
 const VALID_MODES = new Set(['convert', 'compress', 'merge'])
+
+// Brand + default landing title. Kept in one place so index.html and the
+// runtime title stay in sync.
+export const SITE_NAME = 'Morph'
+export const HOME_TITLE = 'Morph — file conversion, beautifully'
 
 // The app is a single page served at the site root. Any other path is unknown
 // (→ 404). Tolerate a base-path deploy by allowing the configured BASE_URL, and
@@ -93,4 +99,80 @@ export function hrefForSelection(section, selection) {
   if (section === 'compress') return `/${buildSearch({ mode: 'compress', compressSel: selection })}`
   if (section === 'merge') return `/${buildSearch({ mode: 'merge', mergeSel: selection })}`
   return '/'
+}
+
+// The human action label for a merge op, from config.
+function mergeTitleFor(op) {
+  for (const cat of MERGE_MENU) {
+    const found = cat.items.find((it) => it.op === op)
+    if (found) return found.label
+  }
+  return 'Merge PDFs'
+}
+
+// The default landing description (mirrors index.html's og:description).
+const HOME_DESCRIPTION =
+  'Convert, compress, and merge files right in your browser — images, PDFs, audio, and video. Fast, private, and free.'
+
+// The specific action label for a state, or '' if it's the default/home view.
+// e.g. "Convert to WebP", "Compress PNG", "Split PDF", "PDF → PNG".
+function actionLabel({ mode, conversion, compressSel, mergeSel }) {
+  if (mode === 'convert') {
+    const { from, to } = conversion ?? {}
+    if (to === DEFAULT_CONVERSION.to && from === DEFAULT_CONVERSION.from) return ''
+    if (from === 'pdf' || to === 'pdf') return `${from?.toUpperCase() ?? ''} → ${to?.toUpperCase() ?? ''}`
+    if (to) return `Convert to ${getFormat(to).label.toUpperCase()}`
+  } else if (mode === 'compress') {
+    if (compressSel?.format) return `Compress ${getFormat(compressSel.format).label.toUpperCase()}`
+  } else if (mode === 'merge') {
+    if (mergeSel?.op) return mergeTitleFor(mergeSel.op)
+  }
+  return ''
+}
+
+// A one-line, human description for a specific action, for the meta description.
+function actionDescription(state) {
+  const { mode, conversion, compressSel, mergeSel } = state
+  if (mode === 'convert') {
+    const { from, to } = conversion ?? {}
+    if (from === 'pdf' || to === 'pdf') {
+      return `Convert ${from?.toUpperCase()} to ${to?.toUpperCase()} right in your browser — fast, private, and free. No upload, nothing leaves your device.`
+    }
+    if (to) {
+      const f = getFormat(to)
+      return `Convert images to ${f.label.toUpperCase()} in your browser — fast, private, and free. ${f.description || ''}`.trim()
+    }
+  } else if (mode === 'compress' && compressSel?.format) {
+    const f = getFormat(compressSel.format)
+    return `Compress ${f.label.toUpperCase()} files in your browser to shrink their size — fast, private, and free. Nothing leaves your device.`
+  } else if (mode === 'merge' && mergeSel?.op) {
+    return `${mergeTitleFor(mergeSel.op)} right in your browser — fast, private, and free. Your files never leave your device.`
+  }
+  return HOME_DESCRIPTION
+}
+
+/**
+ * The document tab title for a given app state, following the convention of
+ * putting the specific action first and the brand last ("Convert to WebP ·
+ * Morph"), so a truncated/bookmarked tab still identifies the page. The bare
+ * default landing view keeps the brand tagline; an unknown path is a 404.
+ */
+export function titleFor(state) {
+  if (state?.notFound) return `Page not found · ${SITE_NAME}`
+  const action = actionLabel(state)
+  return action ? `${action} · ${SITE_NAME}` : HOME_TITLE
+}
+
+/**
+ * Title + description for the current view, for syncing the tab title and the
+ * meta/OG description tags. Keeps social/SEO metadata specific per page.
+ */
+export function metaFor(state) {
+  if (state?.notFound) {
+    return {
+      title: `Page not found · ${SITE_NAME}`,
+      description: 'The page you were looking for could not be found on Morph.',
+    }
+  }
+  return { title: titleFor(state), description: actionDescription(state) }
 }

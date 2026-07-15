@@ -84,6 +84,7 @@ export function MediaConvertWorkspace({ conversion, onChangeTarget }) {
             onFiles={handleFiles}
             accept={accept}
             hint={`Drop a ${targetIsVideo ? 'video' : 'audio'} file — we convert it to ${to.toUpperCase()} right in your browser.`}
+            headingLevel="h1"
             footer={<MediaTargetSelector to={to} onChangeTarget={(next) => onChangeTarget?.(next)} />}
           />
         </Box>
@@ -91,6 +92,7 @@ export function MediaConvertWorkspace({ conversion, onChangeTarget }) {
 
       <Collapse in={Boolean(notice)} unmountOnExit>
         <Alert
+          role="alert"
           severity="warning"
           variant="outlined"
           onClose={() => setNotice(null)}

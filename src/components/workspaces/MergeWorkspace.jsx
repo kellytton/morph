@@ -131,6 +131,7 @@ function MergePdfWorkspace() {
           <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', flexWrap: 'wrap', rowGap: 1.5 }}>
             <Typography sx={{ fontSize: 20, fontWeight: 700 }}>Arrange</Typography>
             <StickerToggle
+              ariaLabel="Arrange by"
               value={arrange}
               onChange={setArrange}
               size="small"
@@ -159,7 +160,7 @@ function MergePdfWorkspace() {
             </StickerButton>
           </Stack>
 
-          {error && <Alert severity="error">{error}</Alert>}
+          {error && <Alert role="alert" severity="error">{error}</Alert>}
 
           {arrange === 'pages' && (
             <PdfPageEditor
@@ -212,20 +213,20 @@ function MergePdfWorkspace() {
               </Box>
               <Tooltip title="Move up">
                 <span>
-                  <IconButton size="small" disabled={i === 0} onClick={() => move(i, -1)}>
+                  <IconButton aria-label={`Move ${f.file.name} up`} size="small" disabled={i === 0} onClick={() => move(i, -1)}>
                     <ArrowUpwardRoundedIcon fontSize="small" />
                   </IconButton>
                 </span>
               </Tooltip>
               <Tooltip title="Move down">
                 <span>
-                  <IconButton size="small" disabled={i === files.length - 1} onClick={() => move(i, 1)}>
+                  <IconButton aria-label={`Move ${f.file.name} down`} size="small" disabled={i === files.length - 1} onClick={() => move(i, 1)}>
                     <ArrowDownwardRoundedIcon fontSize="small" />
                   </IconButton>
                 </span>
               </Tooltip>
               <Tooltip title="Remove">
-                <IconButton size="small" onClick={() => remove(f.id)}>
+                <IconButton aria-label={`Remove ${f.file.name}`} size="small" onClick={() => remove(f.id)}>
                   <CloseRoundedIcon fontSize="small" />
                 </IconButton>
               </Tooltip>

@@ -11,11 +11,12 @@ const SPRING = 'cubic-bezier(0.34, 1.56, 0.64, 1)'
  * `options`: [{ value, label, sticker?, icon? }]  — `sticker` picks the swatch.
  * `value` / `onChange(value)`: controlled selection.
  */
-export function StickerToggle({ options, value, onChange, size = 'medium', sx }) {
+export function StickerToggle({ options, value, onChange, size = 'medium', sx, ariaLabel }) {
   const pad = size === 'small' ? { px: 1.5, py: 0.5, fontSize: 13.5 } : { px: 2, py: 0.75, fontSize: 15 }
   return (
     <Box
       role="group"
+      aria-label={ariaLabel}
       sx={{
         display: 'inline-flex',
         gap: 1,
@@ -31,6 +32,7 @@ export function StickerToggle({ options, value, onChange, size = 'medium', sx })
             key={opt.value}
             onClick={() => onChange?.(opt.value)}
             aria-pressed={selected}
+            aria-label={opt.label}
             sx={(theme) => {
               const s = theme.morph.sticker
               const swatch = theme.morph.stickers[opt.sticker ?? 'blue']

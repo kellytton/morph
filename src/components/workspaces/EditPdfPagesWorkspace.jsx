@@ -67,7 +67,7 @@ export function EditPdfPagesWorkspace() {
         </Box>
       </Fade>
 
-      {error && <Alert severity="error">{error}</Alert>}
+      {error && <Alert role="alert" severity="error">{error}</Alert>}
 
       {files.length > 0 && (
         <Stack spacing={2}>

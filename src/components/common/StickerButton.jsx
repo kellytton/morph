@@ -37,7 +37,9 @@ export function StickerButton({
         },
         '&:active': { transform: 'translateY(0) scale(0.97)' },
         '&.Mui-disabled, &:disabled': {
-          opacity: 0.45,
+          // 0.6 keeps the label above the 4.5:1 contrast floor while still
+          // reading clearly as disabled (0.45 fell to ~2.6:1).
+          opacity: 0.6,
           boxShadow: 'none',
           transform: 'none',
         },

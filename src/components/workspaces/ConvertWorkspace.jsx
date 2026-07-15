@@ -124,6 +124,7 @@ export function ConvertWorkspace({ conversion, onChangeTarget, onChangeConversio
               onFiles={handleFiles}
               accept={IMAGE_ACCEPT}
               hint="Any image works — format auto-detected"
+              headingLevel="h1"
               footer={<TargetSelector to={to} onChangeTarget={onChangeTarget} />}
             />
           ) : (
@@ -138,6 +139,7 @@ export function ConvertWorkspace({ conversion, onChangeTarget, onChangeConversio
       {/* Gentle notice when unsupported files were skipped on upload. */}
       <Collapse in={Boolean(notice)} unmountOnExit>
         <Alert
+          role="alert"
           severity="warning"
           variant="outlined"
           onClose={() => setNotice(null)}

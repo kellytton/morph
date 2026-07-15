@@ -24,7 +24,7 @@ export function MergeWorkspaceHeader({ icon, title, subtitle }) {
         {icon}
       </Box>
       <Box>
-        <Typography sx={{ fontSize: { xs: 20, md: 24 }, fontWeight: 700 }}>{title}</Typography>
+        <Typography component="h1" sx={{ fontSize: { xs: 20, md: 24 }, fontWeight: 700 }}>{title}</Typography>
         <Typography sx={{ color: 'text.secondary', fontWeight: 500 }}>{subtitle}</Typography>
       </Box>
     </Paper>

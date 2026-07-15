@@ -28,6 +28,30 @@ export function AppLayout({
         transition: 'background-color 240ms ease, color 240ms ease',
       }}
     >
+      {/* Skip link: first focusable element, hidden until focused, lets
+          keyboard/AT users jump past the header straight to the content. */}
+      <Box
+        component="a"
+        href="#main-content"
+        sx={{
+          position: 'absolute',
+          left: 12,
+          top: -60,
+          zIndex: (t) => t.zIndex.tooltip + 1,
+          px: 2,
+          py: 1,
+          borderRadius: 2,
+          bgcolor: 'primary.main',
+          color: 'background.default',
+          fontWeight: 700,
+          textDecoration: 'none',
+          transition: 'top 160ms ease',
+          '&:focus-visible': { top: 12 },
+        }}
+      >
+        Skip to main content
+      </Box>
+
       <StarField />
       {/* Header is position: sticky, so it must be a direct child of this
           scrolling column (not wrapped in another positioned box, which would
@@ -41,6 +65,7 @@ export function AppLayout({
       />
       <Box
         component="main"
+        id="main-content"
         sx={{
           position: 'relative',
           zIndex: 1,

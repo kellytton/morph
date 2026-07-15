@@ -21,7 +21,7 @@ const pulse = keyframes`
  * highlighting, and drop, with playful hover/drag microinteractions. Emits
  * selected files via onFiles(File[]).
  */
-export function UploadZone({ onFiles, accept = 'image/*', hint, footer }) {
+export function UploadZone({ onFiles, accept = 'image/*', hint, footer, headingLevel = 'h2' }) {
   const inputRef = useRef(null)
   const [dragOver, setDragOver] = useState(false)
 
@@ -115,9 +115,11 @@ export function UploadZone({ onFiles, accept = 'image/*', hint, footer }) {
             the same thing. */}
         <Typography
           className="upload-title"
+          component={headingLevel}
           sx={{
             fontSize: { xs: 22, md: 28 },
             fontWeight: 700,
+            m: 0,
             transition: 'transform 220ms ease',
           }}
         >

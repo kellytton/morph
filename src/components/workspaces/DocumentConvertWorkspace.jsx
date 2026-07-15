@@ -130,6 +130,7 @@ export function DocumentConvertWorkspace({ conversion, onChangeTarget }) {
                 ? `Drop a PDF — each page becomes a ${to.toUpperCase()} image.`
                 : 'Drop images — we combine them into a single PDF.'
             }
+            headingLevel="h1"
             footer={<DocTargetSelector to={to} onChangeTarget={(next) => onChangeTarget?.(next)} />}
           />
         </Box>
@@ -137,6 +138,7 @@ export function DocumentConvertWorkspace({ conversion, onChangeTarget }) {
 
       <Collapse in={Boolean(notice)} unmountOnExit>
         <Alert
+          role="alert"
           severity="warning"
           variant="outlined"
           onClose={() => setNotice(null)}

@@ -3,7 +3,18 @@ import { AppLayout } from './components/layout/AppLayout'
 import { HomePage } from './pages/HomePage'
 import { NotFoundPage } from './pages/NotFoundPage'
 import { convertItemToConversion } from './config/conversions'
-import { parseLocation, buildSearch, isKnownPath } from './config/routing'
+import { parseLocation, buildSearch, isKnownPath, metaFor } from './config/routing'
+
+// Set the content of a <meta> tag (by name or property), creating it if absent.
+function setMeta(selector, attr, key, content) {
+  let el = document.head.querySelector(selector)
+  if (!el) {
+    el = document.createElement('meta')
+    el.setAttribute(attr, key)
+    document.head.appendChild(el)
+  }
+  el.setAttribute('content', content)
+}
 
 export default function App() {
   // Initial state comes from the URL, so deep links (and new-tab links from the
@@ -36,6 +47,24 @@ export default function App() {
     if (search !== window.location.search) {
       window.history.replaceState(null, '', search)
     }
+  }, [mode, conversion, compressSel, mergeSel, notFound])
+
+  // Reflect the current page in the tab title AND the meta/OG description, so
+  // bookmarks, shared links, and JS-capable crawlers get page-specific metadata.
+  // (The static index.html tags remain the baseline for non-JS crawlers.)
+  useEffect(() => {
+    const { title, description } = metaFor({ mode, conversion, compressSel, mergeSel, notFound })
+    document.title = title
+    setMeta('meta[name="description"]', 'name', 'description', description)
+    setMeta('meta[property="og:title"]', 'property', 'og:title', title)
+    setMeta('meta[property="og:description"]', 'property', 'og:description', description)
+    setMeta('meta[name="twitter:title"]', 'name', 'twitter:title', title)
+    setMeta('meta[name="twitter:description"]', 'name', 'twitter:description', description)
+    // Keep the canonical + og:url pointing at the current route.
+    const url = `${window.location.origin}${window.location.pathname}${window.location.search}`
+    let canonical = document.head.querySelector('link[rel="canonical"]')
+    if (canonical) canonical.setAttribute('href', url)
+    setMeta('meta[property="og:url"]', 'property', 'og:url', url)
   }, [mode, conversion, compressSel, mergeSel, notFound])
 
   // Back/Forward (and the logo's "/" link, which pushes state): re-read the URL

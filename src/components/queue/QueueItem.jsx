@@ -75,7 +75,7 @@ function Thumb({ file, onExpand }) {
             '&:hover': { transform: 'scale(1.04)' },
             '&:hover .thumb-zoom': { opacity: 1 },
           },
-          '&:focus-visible': { boxShadow: `0 0 0 2px ${theme.palette.primary.main}` },
+          '&:focus-visible': { outline: `3px solid ${theme.palette.primary.main}`, outlineOffset: '2px' },
         }),
       })}
     >
@@ -276,27 +276,31 @@ export function QueueItem({ item, onDownload, onCancel, onRetry, onRemove, onExp
 
         {isDone && (
           <Tooltip title="Download">
-            <IconButton onClick={() => onDownload(item)} sx={{ color: 'primary.main' }}>
+            <IconButton
+              aria-label={`Download ${item.file.name}`}
+              onClick={() => onDownload(item)}
+              sx={{ color: 'primary.main' }}
+            >
               <DownloadRoundedIcon />
             </IconButton>
           </Tooltip>
         )}
         {isError && (
           <Tooltip title="Retry">
-            <IconButton onClick={() => onRetry(item.id)}>
+            <IconButton aria-label={`Retry ${item.file.name}`} onClick={() => onRetry(item.id)}>
               <ReplayRoundedIcon />
             </IconButton>
           </Tooltip>
         )}
         {isConverting ? (
           <Tooltip title="Cancel">
-            <IconButton onClick={() => onCancel(item.id)}>
+            <IconButton aria-label={`Cancel ${item.file.name}`} onClick={() => onCancel(item.id)}>
               <CloseRoundedIcon />
             </IconButton>
           </Tooltip>
         ) : (
           <Tooltip title="Remove">
-            <IconButton onClick={() => onRemove(item.id)}>
+            <IconButton aria-label={`Remove ${item.file.name}`} onClick={() => onRemove(item.id)}>
               <CloseRoundedIcon />
             </IconButton>
           </Tooltip>

@@ -200,6 +200,8 @@ export function Header({ mode, onSelectConvert, onSelectCompress, onSelectMerge,
       <Logo onGoHome={onGoHome} />
 
       <Stack
+        component="nav"
+        aria-label="Tools"
         direction="row"
         spacing={{ xs: 1, md: 2 }}
         sx={{ display: { xs: 'none', sm: 'flex' } }}

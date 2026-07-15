@@ -195,7 +195,7 @@ export function SplitPdfWorkspace() {
         </Stack>
       )}
 
-      {error && <Alert severity="error">{error}</Alert>}
+      {error && <Alert role="alert" severity="error">{error}</Alert>}
 
       {total > 0 && (
         <Stack spacing={2}>
@@ -206,6 +206,7 @@ export function SplitPdfWorkspace() {
             sx={{ alignItems: 'center', flexWrap: 'wrap', rowGap: 1.5 }}
           >
             <StickerToggle
+              ariaLabel="Split mode"
               value={preset}
               onChange={applyPreset}
               size="small"
@@ -338,7 +339,10 @@ function PageThumb({ thumb, index, color, groupStart, groupLabel, onExpand }) {
           outline: 'none',
           '& .zoom-hint': { opacity: 0 },
           '@media (hover: hover)': { '&:hover .zoom-hint': { opacity: 1 } },
-          '&:focus-visible': { boxShadow: (t) => `inset 0 0 0 2px ${t.palette.primary.main}` },
+          '&:focus-visible': {
+            outline: (t) => `3px solid ${t.palette.primary.main}`,
+            outlineOffset: '2px',
+          },
         }}
       >
         <Box
@@ -504,7 +508,7 @@ function CutDivider({ active, onClick, between }) {
               '&:hover': { color: t.palette.primary.main, bgcolor: 'action.hover' },
               '&:hover .cut-line': { borderColor: t.palette.primary.main },
             },
-            '&:focus-visible': { boxShadow: `0 0 0 2px ${t.palette.primary.main}` },
+            '&:focus-visible': { outline: `3px solid ${t.palette.primary.main}`, outlineOffset: '2px' },
           })}
         >
           {/* Leading rule: horizontal on mobile, vertical on desktop. */}

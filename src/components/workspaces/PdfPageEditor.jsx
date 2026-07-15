@@ -71,7 +71,10 @@ function PageTile({ page, index, total, onMove, onRotate, onDelete, onExpand }) 
           '@media (hover: hover)': {
             '&:hover .zoom-hint': { opacity: 1 },
           },
-          '&:focus-visible': { boxShadow: (t) => `inset 0 0 0 2px ${t.palette.primary.main}` },
+          '&:focus-visible': {
+            outline: (t) => `3px solid ${t.palette.primary.main}`,
+            outlineOffset: '2px',
+          },
         }}
       >
         <Box

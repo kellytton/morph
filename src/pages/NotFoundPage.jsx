@@ -40,10 +40,10 @@ export function NotFoundPage({ onGoHome }) {
         <PuffyStar color={STAR_COLOR} size={112} />
       </Box>
 
-      <Typography sx={{ fontSize: { xs: 64, md: 88 }, fontWeight: 700, lineHeight: 1 }}>
+      <Typography component="h1" sx={{ fontSize: { xs: 64, md: 88 }, fontWeight: 700, lineHeight: 1, m: 0 }}>
         404
       </Typography>
-      <Typography sx={{ fontSize: { xs: 22, md: 28 }, fontWeight: 700 }}>
+      <Typography component="p" sx={{ fontSize: { xs: 22, md: 28 }, fontWeight: 700 }}>
         This page drifted off into space
       </Typography>
       {/* Use text.primary at a slight opacity rather than text.secondary: the

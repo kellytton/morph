@@ -2,9 +2,73 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Primary meta -->
     <title>Morph — file conversion, beautifully</title>
+    <meta
+      name="description"
+      content="Morph converts, compresses, and merges your files right in the browser — images, PDFs, audio, and video. Fast, private (nothing leaves your device), and free."
+    />
+    <meta
+      name="keywords"
+      content="file converter, image converter, PDF tools, compress images, merge PDF, split PDF, WebP, PNG, JPG, AVIF, MP4, MP3, browser file conversion"
+    />
+    <meta name="author" content="Morph" />
+    <link rel="canonical" href="https://usemorph.netlify.app/" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Icons -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+
+    <!-- Theme color (adapts to the user's light/dark preference) -->
+    <meta name="theme-color" content="#f8ecd3" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#262626" media="(prefers-color-scheme: dark)" />
+
+    <!-- Open Graph (Facebook, LinkedIn, Slack, iMessage, …) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Morph" />
+    <meta property="og:title" content="Morph — file conversion, beautifully" />
+    <meta
+      property="og:description"
+      content="Convert, compress, and merge files right in your browser — images, PDFs, audio, and video. Fast, private, and free."
+    />
+    <meta property="og:url" content="https://usemorph.netlify.app/" />
+    <meta property="og:image" content="https://usemorph.netlify.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Morph — file conversion, beautifully" />
+
+    <!-- Twitter / X card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Morph — file conversion, beautifully" />
+    <meta
+      name="twitter:description"
+      content="Convert, compress, and merge files right in your browser — images, PDFs, audio, and video. Fast, private, and free."
+    />
+    <meta name="twitter:image" content="https://usemorph.netlify.app/og-image.png" />
+
+    <!-- Structured data: helps search engines understand the app -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Morph",
+        "url": "https://usemorph.netlify.app/",
+        "description": "Convert, compress, and merge files right in your browser — images, PDFs, audio, and video. Fast, private, and free.",
+        "applicationCategory": "UtilitiesApplication",
+        "operatingSystem": "Any (web browser)",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+        "featureList": [
+          "Convert images (PNG, JPG, WebP, AVIF, BMP, ICO)",
+          "Convert PDF to images and images to PDF",
+          "Convert audio and video (MP4, WebM, GIF, MP3, WAV, OGG)",
+          "Compress images and media",
+          "Merge, split, and edit PDF pages"
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

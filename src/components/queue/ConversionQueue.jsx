@@ -21,10 +21,42 @@ export function ConversionQueue({ queue }) {
   const doneCount = items.filter((it) => it.status === STATUS.DONE).length
   const expanded = items.find((it) => it.id === expandedId) ?? null
 
+  // A concise, politely-announced summary of queue progress for screen readers,
+  // so completions/failures are conveyed without spamming per-progress-tick.
+  const errorCount = items.filter((it) => it.status === STATUS.ERROR).length
+  const busyCount = items.filter(
+    (it) => it.status === STATUS.PENDING || it.status === STATUS.CONVERTING,
+  ).length
+  const liveParts = []
+  if (busyCount) liveParts.push(`${busyCount} processing`)
+  if (doneCount) liveParts.push(`${doneCount} done`)
+  if (errorCount) liveParts.push(`${errorCount} failed`)
+  const liveMessage = liveParts.length ? `Queue: ${liveParts.join(', ')}.` : ''
+
   return (
     <Stack spacing={2.5}>
+      {/* Visually-hidden polite live region: announces queue progress to screen
+          readers as items finish or fail, without cluttering the visual UI. */}
+      <Box
+        role="status"
+        aria-live="polite"
+        sx={{
+          position: 'absolute',
+          width: 1,
+          height: 1,
+          p: 0,
+          m: -1,
+          overflow: 'hidden',
+          clip: 'rect(0 0 0 0)',
+          whiteSpace: 'nowrap',
+          border: 0,
+        }}
+      >
+        {liveMessage}
+      </Box>
+
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Typography sx={{ fontSize: 22, fontWeight: 700 }}>
+        <Typography component="h2" sx={{ fontSize: 22, fontWeight: 700, m: 0 }}>
           Queue
           <Box component="span" sx={{ color: 'text.secondary', ml: 1 }}>
             {items.length}
