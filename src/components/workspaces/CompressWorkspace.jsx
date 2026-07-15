@@ -7,7 +7,7 @@ import { QualityControl } from '../conversion/QualityControl'
 import { ConversionQueue } from '../queue/ConversionQueue'
 import { ComingSoon } from '../common/ComingSoon'
 import { useConversionQueue } from '../../hooks/useConversionQueue'
-import { canCompress } from '../../converters/registry'
+import { canCompress, isMediaFormat } from '../../converters/registry'
 import { getFormat } from '../../config/conversions'
 
 /**
@@ -20,6 +20,11 @@ export function CompressWorkspace({ selection }) {
   const format = selection.format
   const supported = canCompress(format)
   const [quality, setQuality] = useState(70)
+
+  // Accept the file type that matches what we're compressing, so media/PDF
+  // selections don't silently reject their own files behind an image-only
+  // picker. Drag-drop bypasses this hint anyway; the queue re-encodes by format.
+  const accept = isMediaFormat(format) ? `${format === 'mp3' ? 'audio' : 'video'}/*` : `.${format}`
 
   const handleFiles = (files) => {
     queue.addFiles(files, {
@@ -50,7 +55,11 @@ export function CompressWorkspace({ selection }) {
 
           <Fade in timeout={400}>
             <Box>
-              <UploadZone onFiles={handleFiles} accept="image/*" />
+              <UploadZone
+                onFiles={handleFiles}
+                accept={accept}
+                hint={`Drop a ${getFormat(format).label.toUpperCase()} to shrink it — format stays the same`}
+              />
             </Box>
           </Fade>
 

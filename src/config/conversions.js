@@ -340,6 +340,12 @@ export function convertItemSticker(item) {
   return getFormat(item.target ?? item.to ?? item.from).sticker;
 }
 
+/** The sticker swatch key to show beside a compress-menu item (keyed by its
+ * format, so each format keeps the same pastel identity as everywhere else). */
+export function compressItemSticker(item) {
+  return getFormat(item.format).sticker;
+}
+
 /**
  * Resolve a convert-menu item into a { from, to } conversion. For plain target
  * items, the source defaults sensibly (overridden later by the dropped file).

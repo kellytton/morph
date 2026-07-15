@@ -13,6 +13,7 @@ import {
   MERGE_MENU,
   convertItemLabel,
   convertItemSticker,
+  compressItemSticker,
 } from '../../config/conversions'
 
 function NavItem({ label, open, active, onClick }) {
@@ -59,6 +60,7 @@ const SECTION_MENUS = {
     categories: COMPRESS_MENU,
     getItems: (c) => c.items,
     renderLabel: (item) => item.label,
+    getSticker: (item) => compressItemSticker(item),
   },
   merge: {
     categories: MERGE_MENU,

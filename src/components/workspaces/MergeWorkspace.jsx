@@ -1,40 +1,63 @@
-import { useState } from 'react'
-import { Box, Fade, Paper, Typography, IconButton, Tooltip, Button, Stack, Chip } from '@mui/material'
+import { useState, useRef, useMemo } from 'react'
+import {
+  Box,
+  Fade,
+  Paper,
+  Typography,
+  IconButton,
+  Tooltip,
+  Stack,
+  Chip,
+  Alert,
+} from '@mui/material'
 import CallMergeRoundedIcon from '@mui/icons-material/CallMergeRounded'
 import ArrowUpwardRoundedIcon from '@mui/icons-material/ArrowUpwardRounded'
 import ArrowDownwardRoundedIcon from '@mui/icons-material/ArrowDownwardRounded'
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded'
 import { UploadZone } from '../upload/UploadZone'
+import { MergeWorkspaceHeader } from './MergeWorkspaceHeader'
+import { SplitPdfWorkspace } from './SplitPdfWorkspace'
+import { EditPdfPagesWorkspace } from './EditPdfPagesWorkspace'
+import { PdfPageEditor } from './PdfPageEditor'
+import { StickerToggle } from '../common/StickerToggle'
+import { StickerButton } from '../common/StickerButton'
+import { useFlipReorder } from '../../hooks/useFlipReorder'
+import { mergePdfs, editPdfPages } from '../../converters/pdfConverters'
+import { downloadBlob } from '../../utils/download'
 import { formatBytes } from '../../utils/format'
-
-// Describes each merge operation's copy + which files it accepts.
-const OP_META = {
-  'merge-pdf': { title: 'Merge PDFs', accept: 'application/pdf', unit: 'PDF', verb: 'Merge' },
-  'reorder-pdf': { title: 'Rearrange pages', accept: 'application/pdf', unit: 'PDF', verb: 'Save order' },
-  'split-pdf': { title: 'Split PDF', accept: 'application/pdf', unit: 'PDF', verb: 'Split' },
-  'images-to-pdf': { title: 'Images → PDF', accept: 'image/*', unit: 'image', verb: 'Build PDF' },
-  'combine-images': { title: 'Combine into one image', accept: 'image/*', unit: 'image', verb: 'Combine' },
-}
 
 let uid = 0
 
 /**
- * Merge mode: gather files, arrange their order, then run the operation.
- * The reorder UI is fully interactive; the actual merge/split engine is
- * scaffolded (needs a PDF library) and reports a coming-soon action for now.
+ * Merge mode: gather PDFs, arrange their order, then combine them into one.
+ * Two arrangement modes:
+ *   • "files" — concatenate whole PDFs in the chosen order (fast path).
+ *   • "pages" — load every page as a thumbnail so pages can be interleaved,
+ *     reordered, rotated, or dropped across all the added PDFs.
+ * Split and page-editing operations are delegated to their own workspaces.
  */
-export function MergeWorkspace({ selection }) {
-  const meta = OP_META[selection.op] ?? OP_META['merge-pdf']
+function MergePdfWorkspace() {
   const [files, setFiles] = useState([])
-  const [notice, setNotice] = useState(null)
+  const [arrange, setArrange] = useState('files') // 'files' | 'pages'
+  const [pageCount, setPageCount] = useState(0)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState(null)
+  const editorRef = useRef(null)
+  const listRef = useRef(null)
+
+  // The raw File[] in current order, for the page editor. Recomputed only when
+  // the file list changes so the editor doesn't needlessly reload thumbnails.
+  const orderedFiles = useMemo(() => files.map((f) => f.file), [files])
+
+  // Smoothly slide rows to their new spots when reordered (no snap/flicker).
+  // Only a true reorder animates; adding/removing files just settles in place.
+  useFlipReorder(listRef, files.map((f) => f.id))
 
   const addFiles = (incoming) => {
-    setFiles((prev) => [
-      ...prev,
-      ...incoming.map((file) => ({ id: `m${++uid}`, file })),
-    ])
-    setNotice(null)
+    const pdfs = incoming.filter((f) => f.type === 'application/pdf')
+    setFiles((prev) => [...prev, ...pdfs.map((file) => ({ id: `m${++uid}`, file }))])
+    setError(null)
   }
 
   const move = (index, dir) => {
@@ -48,72 +71,115 @@ export function MergeWorkspace({ selection }) {
   }
   const remove = (id) => setFiles((prev) => prev.filter((f) => f.id !== id))
 
+  const run = async () => {
+    setError(null)
+    setBusy(true)
+    try {
+      let blob
+      if (arrange === 'pages') {
+        const pages = editorRef.current?.getPages() ?? []
+        if (!pages.length) {
+          setError('Keep at least one page to merge.')
+          return
+        }
+        ;({ blob } = await editPdfPages(pages))
+      } else {
+        if (files.length < 2) {
+          setError('Add at least two PDFs to merge.')
+          return
+        }
+        ;({ blob } = await mergePdfs(orderedFiles))
+      }
+      downloadBlob(blob, 'merged.pdf')
+    } catch (e) {
+      setError(e?.message ?? 'Something went wrong while merging.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const mergeDisabled = busy || (arrange === 'pages' && pageCount === 0)
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: { xs: 3, md: 6 } }}>
-      <Paper sx={{ p: { xs: 2.5, md: 3 }, display: 'flex', alignItems: 'center', gap: 2.5 }}>
-        <Box
-          sx={(t) => ({
-            width: 44,
-            height: 44,
-            borderRadius: '12px',
-            bgcolor: t.morph.stickers.lilac,
-            border: `2px solid ${t.morph.sticker.peel}`,
-            boxShadow: t.morph.sticker.shadow,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-          })}
-        >
-          <CallMergeRoundedIcon sx={{ color: 'text.primary' }} />
-        </Box>
-        <Box>
-          <Typography sx={{ fontSize: { xs: 20, md: 24 }, fontWeight: 700 }}>{meta.title}</Typography>
-          <Typography sx={{ color: 'text.secondary', fontWeight: 500 }}>
-            Add your {meta.unit}s, arrange the order, then {meta.verb.toLowerCase()}.
-          </Typography>
-        </Box>
-      </Paper>
+      <MergeWorkspaceHeader
+        icon={<CallMergeRoundedIcon sx={{ color: 'text.primary' }} />}
+        title="Merge PDFs"
+        subtitle="Add your PDFs, arrange them by file or by page, then merge into one."
+      />
 
       <Fade in timeout={400}>
         <Box>
-          <UploadZone onFiles={addFiles} accept={meta.accept} />
+          <UploadZone
+            onFiles={addFiles}
+            accept="application/pdf"
+            hint={
+              files.length
+                ? 'Add another PDF to include it in the merge'
+                : 'Drop two or more PDFs to combine them into one'
+            }
+          />
         </Box>
       </Fade>
 
       {files.length > 0 && (
         <Stack spacing={1.5}>
-          <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center' }}>
-            <Typography sx={{ fontSize: 20, fontWeight: 700 }}>Order</Typography>
-            <Chip size="small" label={`${files.length} ${meta.unit}${files.length > 1 ? 's' : ''}`} sx={{ fontWeight: 600 }} />
+          <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', flexWrap: 'wrap', rowGap: 1.5 }}>
+            <Typography sx={{ fontSize: 20, fontWeight: 700 }}>Arrange</Typography>
+            <StickerToggle
+              value={arrange}
+              onChange={setArrange}
+              size="small"
+              options={[
+                { value: 'files', label: 'Whole files', sticker: 'lilac' },
+                { value: 'pages', label: 'Rearrange pages', sticker: 'mint' },
+              ]}
+            />
+            <Chip
+              size="small"
+              label={
+                arrange === 'pages'
+                  ? `${pageCount} page${pageCount === 1 ? '' : 's'}`
+                  : `${files.length} PDF${files.length > 1 ? 's' : ''}`
+              }
+              sx={{ fontWeight: 600 }}
+            />
             <Box sx={{ flex: 1 }} />
-            <Button
-              variant="contained"
-              onClick={() => setNotice('coming-soon')}
-              sx={{ color: 'background.default' }}
+            <StickerButton
+              sticker="blue"
+              startIcon={<CallMergeRoundedIcon sx={{ fontSize: 20 }} />}
+              disabled={mergeDisabled}
+              onClick={run}
             >
-              {meta.verb}
-            </Button>
+              Merge
+            </StickerButton>
           </Stack>
 
-          {notice === 'coming-soon' && (
-            <Paper sx={{ p: 2 }}>
-              <Typography sx={{ fontWeight: 600 }}>
-                ✨ The merge engine is coming soon — but your order is all set! We're
-                wiring up the PDF toolkit next.
-              </Typography>
-            </Paper>
+          {error && <Alert severity="error">{error}</Alert>}
+
+          {arrange === 'pages' && (
+            <PdfPageEditor
+              ref={editorRef}
+              files={orderedFiles}
+              onError={setError}
+              onCountChange={setPageCount}
+            />
           )}
 
-          {files.map((f, i) => (
+          {arrange === 'files' && (
+          <Box ref={listRef} sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+            {files.map((f, i) => (
             <Paper
               key={f.id}
+              data-flip-id={f.id}
               sx={(t) => ({
                 p: 1.5,
                 display: 'flex',
                 alignItems: 'center',
                 gap: 2,
                 borderLeft: `6px solid ${t.morph.stickers.lilac}`,
+                // FLIP drives `transform`; keep the browser from fighting it.
+                willChange: 'transform',
               })}
             >
               <Box
@@ -160,9 +226,26 @@ export function MergeWorkspace({ selection }) {
                 </IconButton>
               </Tooltip>
             </Paper>
-          ))}
+            ))}
+          </Box>
+          )}
         </Stack>
       )}
     </Box>
   )
+}
+
+/**
+ * Routes to the right merge-family workspace based on the selected operation.
+ */
+export function MergeWorkspace({ selection }) {
+  switch (selection.op) {
+    case 'split-pdf':
+      return <SplitPdfWorkspace />
+    case 'reorder-pdf':
+      return <EditPdfPagesWorkspace />
+    case 'merge-pdf':
+    default:
+      return <MergePdfWorkspace />
+  }
 }

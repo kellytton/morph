@@ -74,8 +74,12 @@ export function NavMenu({
     onClose?.()
   }
 
+  // Only split into two columns when there's more than one category. A
+  // single-category menu (e.g. merge) stays one column so it hugs its content
+  // instead of stretching across an empty second column.
+  const twoCol = categories.length > 1
   const mid = Math.ceil(categories.length / 2)
-  const columns = [categories.slice(0, mid), categories.slice(mid)]
+  const columns = twoCol ? [categories.slice(0, mid), categories.slice(mid)] : [categories]
 
   return (
     <Menu
@@ -89,10 +93,14 @@ export function NavMenu({
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+          // One column when there's a single category; otherwise two on sm+.
+          gridTemplateColumns: twoCol ? { xs: '1fr', sm: '1fr 1fr' } : '1fr',
           gap: { xs: 2, sm: 5 },
           p: 3,
-          minWidth: { xs: 240, sm: 440 },
+          // Right-size to content: a narrow floor for single-category menus,
+          // wider for the two-column layout. Width now follows the items.
+          minWidth: twoCol ? { xs: 240, sm: 440 } : 220,
+          maxWidth: '90vw',
         }}
       >
         {columns.map((column, i) => (
