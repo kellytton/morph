@@ -57,7 +57,7 @@ function cutsToGroups(cuts, total) {
  * offer one-file-per-page and a single (uncut) file; any manual cut reads as
  * "custom". Outputs download as a ZIP.
  */
-export function SplitPdfWorkspace() {
+export function SplitPdfWorkspace({ op, onChangeOp }) {
   const [file, setFile] = useState(null)
   const [thumbs, setThumbs] = useState([]) // [{ page, url, width, height }]
   const [cuts, setCuts] = useState(new Set()) // cut after page index (0-based)
@@ -161,6 +161,8 @@ export function SplitPdfWorkspace() {
         icon={<CallSplitRoundedIcon sx={{ color: 'text.primary' }} />}
         title="Split PDF"
         subtitle="Click between pages to choose where each new file begins."
+        op={op}
+        onChangeOp={onChangeOp}
       />
 
       <Fade in timeout={400}>

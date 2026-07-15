@@ -15,7 +15,7 @@ import { downloadBlob } from '../../utils/download'
  * rotate, and delete individual pages before exporting a new PDF. Supports
  * appending more PDFs — their pages join the same editable grid.
  */
-export function EditPdfPagesWorkspace() {
+export function EditPdfPagesWorkspace({ op, onChangeOp }) {
   const [files, setFiles] = useState([])
   const [count, setCount] = useState(0)
   const [busy, setBusy] = useState(false)
@@ -61,6 +61,8 @@ export function EditPdfPagesWorkspace() {
         icon={<AutoFixHighRoundedIcon sx={{ color: 'text.primary' }} />}
         title="Edit PDF pages"
         subtitle="Reorder, rotate, and delete pages — then save a new PDF."
+        op={op}
+        onChangeOp={onChangeOp}
       />
 
       <Fade in timeout={400}>

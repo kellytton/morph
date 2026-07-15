@@ -39,6 +39,7 @@ export function StickerToggle({ options, value, onChange, size = 'medium', sx, a
               return {
                 display: 'inline-flex',
                 alignItems: 'center',
+                justifyContent: 'center',
                 gap: 0.6,
                 borderRadius: 999,
                 fontWeight: 700,

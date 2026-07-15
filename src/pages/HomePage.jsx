@@ -18,12 +18,13 @@ export function HomePage({
   onChangeTarget,
   onChangeConversion,
   onChangeCompress,
+  onChangeMerge,
 }) {
   if (mode === 'compress') {
     return <CompressWorkspace selection={compressSel} onChangeFormat={onChangeCompress} />
   }
   if (mode === 'merge') {
-    return <MergeWorkspace selection={mergeSel} />
+    return <MergeWorkspace selection={mergeSel} onChangeMerge={onChangeMerge} />
   }
   // Documents: any conversion involving PDF.
   if (conversion.from === 'pdf' || conversion.to === 'pdf') {

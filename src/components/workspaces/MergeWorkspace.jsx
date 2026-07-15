@@ -37,7 +37,7 @@ let uid = 0
  *     reordered, rotated, or dropped across all the added PDFs.
  * Split and page-editing operations are delegated to their own workspaces.
  */
-function MergePdfWorkspace() {
+function MergePdfWorkspace({ op, onChangeOp }) {
   const [files, setFiles] = useState([])
   const [arrange, setArrange] = useState('files') // 'files' | 'pages'
   const [pageCount, setPageCount] = useState(0)
@@ -121,6 +121,8 @@ function MergePdfWorkspace() {
         icon={<CallMergeRoundedIcon sx={{ color: 'text.primary' }} />}
         title="Merge PDFs"
         subtitle="Add your PDFs, arrange them by file or by page, then merge into one."
+        op={op}
+        onChangeOp={onChangeOp}
       />
 
       <Fade in timeout={400}>
@@ -266,14 +268,18 @@ function MergePdfWorkspace() {
 /**
  * Routes to the right merge-family workspace based on the selected operation.
  */
-export function MergeWorkspace({ selection }) {
-  switch (selection.op) {
+export function MergeWorkspace({ selection, onChangeMerge }) {
+  // Pass the current op + change handler so each sub-workspace's header can show
+  // the in-place operation switcher. Default to merge-pdf so the toggle
+  // highlights the right segment on the default (no-op) merge landing.
+  const op = selection.op ?? 'merge-pdf'
+  switch (op) {
     case 'split-pdf':
-      return <SplitPdfWorkspace />
+      return <SplitPdfWorkspace op={op} onChangeOp={onChangeMerge} />
     case 'reorder-pdf':
-      return <EditPdfPagesWorkspace />
+      return <EditPdfPagesWorkspace op={op} onChangeOp={onChangeMerge} />
     case 'merge-pdf':
     default:
-      return <MergePdfWorkspace />
+      return <MergePdfWorkspace op={op} onChangeOp={onChangeMerge} />
   }
 }

@@ -120,6 +120,10 @@ export default function App() {
       setMode('merge')
     }
   }
+  // In-workspace switch of the merge operation (no nav menu needed).
+  const handleChangeMerge = (nextOp) => {
+    if (nextOp) setMergeSel({ op: nextOp })
+  }
 
   // Logo → home: reset to the default landing view and push a clean URL entry so
   // Back returns here. (SPA reset, no full reload.)
@@ -154,6 +158,7 @@ export default function App() {
           onChangeTarget={handleChangeTarget}
           onChangeConversion={handleChangeConversion}
           onChangeCompress={handleChangeCompress}
+          onChangeMerge={handleChangeMerge}
         />
       )}
     </AppLayout>
