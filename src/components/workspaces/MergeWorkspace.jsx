@@ -45,6 +45,10 @@ function MergePdfWorkspace() {
   const [error, setError] = useState(null)
   const editorRef = useRef(null)
   const listRef = useRef(null)
+  // Cancellation: browser PDF work can't be aborted mid-run, so cancel just
+  // flags the in-flight run to discard its result (skip the download) and
+  // returns to the ready state.
+  const canceledRef = useRef(false)
 
   // The raw File[] in current order, for the page editor. Recomputed only when
   // the file list changes so the editor doesn't needlessly reload thumbnails.
@@ -73,6 +77,7 @@ function MergePdfWorkspace() {
 
   const run = async () => {
     setError(null)
+    canceledRef.current = false
     setBusy(true)
     try {
       let blob
@@ -90,12 +95,18 @@ function MergePdfWorkspace() {
         }
         ;({ blob } = await mergePdfs(orderedFiles))
       }
+      if (canceledRef.current) return // canceled mid-run — discard the result
       downloadBlob(blob, 'merged.pdf')
     } catch (e) {
-      setError(e?.message ?? 'Something went wrong while merging.')
+      if (!canceledRef.current) setError(e?.message ?? 'Something went wrong while merging.')
     } finally {
       setBusy(false)
     }
+  }
+
+  const cancel = () => {
+    canceledRef.current = true
+    setBusy(false)
   }
 
   // Disable Merge until it can actually produce something: 2+ files in "whole
@@ -150,14 +161,26 @@ function MergePdfWorkspace() {
               sx={{ fontWeight: 600 }}
             />
             <Box sx={{ flex: 1 }} />
-            <StickerButton
-              sticker="blue"
-              startIcon={<CallMergeRoundedIcon sx={{ fontSize: 20 }} />}
-              disabled={mergeDisabled}
-              onClick={run}
-            >
-              Merge
-            </StickerButton>
+            {busy ? (
+              <StickerButton
+                sticker="peach"
+                aria-label="Cancel"
+                startIcon={<CloseRoundedIcon sx={{ fontSize: 20 }} />}
+                onClick={cancel}
+              >
+                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Cancel</Box>
+              </StickerButton>
+            ) : (
+              <StickerButton
+                sticker="blue"
+                aria-label="Merge"
+                startIcon={<CallMergeRoundedIcon sx={{ fontSize: 20 }} />}
+                disabled={mergeDisabled}
+                onClick={run}
+              >
+                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Merge</Box>
+              </StickerButton>
+            )}
           </Stack>
 
           {error && <Alert role="alert" severity="error">{error}</Alert>}

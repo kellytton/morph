@@ -2,6 +2,7 @@ import { useState, useRef } from 'react'
 import { Box, Fade, Typography, Stack, Chip, Alert } from '@mui/material'
 import AutoFixHighRoundedIcon from '@mui/icons-material/AutoFixHighRounded'
 import SaveRoundedIcon from '@mui/icons-material/SaveRounded'
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import { UploadZone } from '../upload/UploadZone'
 import { MergeWorkspaceHeader } from './MergeWorkspaceHeader'
 import { PdfPageEditor } from './PdfPageEditor'
@@ -21,6 +22,8 @@ export function EditPdfPagesWorkspace() {
   const [error, setError] = useState(null)
   const [baseName, setBaseName] = useState('document')
   const editorRef = useRef(null)
+  // Cancel just discards the in-flight result (browser work can't truly abort).
+  const canceledRef = useRef(false)
 
   const addFiles = (incoming) => {
     const pdfs = incoming.filter((f) => f.type === 'application/pdf')
@@ -34,15 +37,22 @@ export function EditPdfPagesWorkspace() {
     const pages = editorRef.current?.getPages() ?? []
     if (!pages.length) return
     setError(null)
+    canceledRef.current = false
     setBusy(true)
     try {
       const { blob } = await editPdfPages(pages)
+      if (canceledRef.current) return // canceled — discard
       downloadBlob(blob, `${baseName}-edited.pdf`)
     } catch (e) {
-      setError(e?.message ?? 'Something went wrong while saving.')
+      if (!canceledRef.current) setError(e?.message ?? 'Something went wrong while saving.')
     } finally {
       setBusy(false)
     }
+  }
+
+  const cancel = () => {
+    canceledRef.current = true
+    setBusy(false)
   }
 
   return (
@@ -77,14 +87,26 @@ export function EditPdfPagesWorkspace() {
               <Chip size="small" label={`${count} page${count > 1 ? 's' : ''}`} sx={{ fontWeight: 600 }} />
             )}
             <Box sx={{ flex: 1 }} />
-            <StickerButton
-              sticker="blue"
-              startIcon={<SaveRoundedIcon sx={{ fontSize: 20 }} />}
-              disabled={busy || count === 0}
-              onClick={run}
-            >
-              {busy ? 'Saving…' : 'Save PDF'}
-            </StickerButton>
+            {busy ? (
+              <StickerButton
+                sticker="peach"
+                aria-label="Cancel"
+                startIcon={<CloseRoundedIcon sx={{ fontSize: 20 }} />}
+                onClick={cancel}
+              >
+                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Cancel</Box>
+              </StickerButton>
+            ) : (
+              <StickerButton
+                sticker="blue"
+                aria-label="Save PDF"
+                startIcon={<SaveRoundedIcon sx={{ fontSize: 20 }} />}
+                disabled={count === 0}
+                onClick={run}
+              >
+                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Save PDF</Box>
+              </StickerButton>
+            )}
           </Stack>
 
           <PdfPageEditor

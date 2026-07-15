@@ -26,6 +26,13 @@ export function AppLayout({
         bgcolor: 'background.default',
         color: 'text.primary',
         transition: 'background-color 240ms ease, color 240ms ease',
+        // Decorative bits (celebration bursts, edge stars) can extend past the
+        // content edges; clip that overflow so they never create extra scroll
+        // area (a horizontal scrollbar, or empty space below the footer).
+        // `clip` (not `hidden`) doesn't make this a scroll container, so the
+        // page still scrolls on the document and the sticky header keeps working.
+        overflow: 'clip',
+        maxWidth: '100vw',
       }}
     >
       {/* Skip link: first focusable element, hidden until focused, lets

@@ -14,6 +14,7 @@ import CallSplitRoundedIcon from '@mui/icons-material/CallSplitRounded'
 import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded'
 import ContentCutRoundedIcon from '@mui/icons-material/ContentCutRounded'
 import ZoomInRoundedIcon from '@mui/icons-material/ZoomInRounded'
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded'
 import { UploadZone } from '../upload/UploadZone'
 import { MergeWorkspaceHeader } from './MergeWorkspaceHeader'
 import { StickerToggle } from '../common/StickerToggle'
@@ -64,6 +65,8 @@ export function SplitPdfWorkspace() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
   const [expandedPage, setExpandedPage] = useState(null) // page number, or null
+  // Cancel just discards the in-flight result (browser work can't truly abort).
+  const canceledRef = useRef(false)
 
   const urlsRef = useRef([])
   useEffect(() => {
@@ -124,9 +127,11 @@ export function SplitPdfWorkspace() {
   const run = async () => {
     if (!file || !total) return
     setError(null)
+    canceledRef.current = false
     setBusy(true)
     try {
       const parts = await splitPdf(file, { ranges: groups })
+      if (canceledRef.current) return // canceled — discard
       if (!parts.length) {
         setError('Nothing to split.')
         return
@@ -137,10 +142,15 @@ export function SplitPdfWorkspace() {
         `${base}-split.zip`,
       )
     } catch (e) {
-      setError(e?.message ?? 'Something went wrong while splitting.')
+      if (!canceledRef.current) setError(e?.message ?? 'Something went wrong while splitting.')
     } finally {
       setBusy(false)
     }
+  }
+
+  const cancel = () => {
+    canceledRef.current = true
+    setBusy(false)
   }
 
   const expandedThumb = expandedPage ? thumbs.find((t) => t.page === expandedPage) : null
@@ -222,14 +232,26 @@ export function SplitPdfWorkspace() {
               sx={{ fontWeight: 700 }}
             />
             <Box sx={{ flex: 1 }} />
-            <StickerButton
-              sticker="blue"
-              startIcon={<CallSplitRoundedIcon sx={{ fontSize: 20 }} />}
-              disabled={busy || groups.length < 2}
-              onClick={run}
-            >
-              Split
-            </StickerButton>
+            {busy ? (
+              <StickerButton
+                sticker="peach"
+                aria-label="Cancel"
+                startIcon={<CloseRoundedIcon sx={{ fontSize: 20 }} />}
+                onClick={cancel}
+              >
+                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Cancel</Box>
+              </StickerButton>
+            ) : (
+              <StickerButton
+                sticker="blue"
+                aria-label="Split"
+                startIcon={<CallSplitRoundedIcon sx={{ fontSize: 20 }} />}
+                disabled={groups.length < 2}
+                onClick={run}
+              >
+                <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>Split</Box>
+              </StickerButton>
+            )}
           </Stack>
 
           <Typography sx={{ color: 'text.secondary', fontWeight: 500, fontSize: 14 }}>

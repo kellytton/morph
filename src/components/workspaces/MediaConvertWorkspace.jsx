@@ -67,10 +67,16 @@ export function MediaConvertWorkspace({ conversion, onChangeTarget }) {
     if (first && first !== conversion.from) onChangeTarget?.(to, first)
 
     // Queue each file with its detected source; mark as media so the queue
-    // drives real ffmpeg progress.
+    // drives real ffmpeg progress. GIF is a two-pass (palettegen + paletteuse)
+    // encode whose progress resets mid-run, so we mark it indeterminate — the
+    // bar animates instead of lying (fill to 100%, then restart).
     queue.addFiles(
       accepted.map((a) => a.file),
-      { from: (file) => detectFormat(file) ?? conversion.from, to, params: { isMedia: true } },
+      {
+        from: (file) => detectFormat(file) ?? conversion.from,
+        to,
+        params: { isMedia: true, indeterminate: to === 'gif' },
+      },
     )
   }
 
@@ -128,7 +134,7 @@ export function MediaConvertWorkspace({ conversion, onChangeTarget }) {
       {!hasUploaded && (
         <Typography sx={{ textAlign: 'center', color: 'text.secondary', fontWeight: 500, fontSize: 13 }}>
           {isAudio(to) ? 'Audio' : 'Video'} conversion runs 100% in your browser. The
-          converter (~25&nbsp;MB) loads once on your first conversion.
+          converter (~31&nbsp;MB) loads once on your first conversion.
         </Typography>
       )}
     </Box>

@@ -55,7 +55,7 @@ export function ConversionQueue({ queue }) {
         {liveMessage}
       </Box>
 
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 2 } }}>
         <Typography component="h2" sx={{ fontSize: 22, fontWeight: 700, m: 0 }}>
           Queue
           <Box component="span" sx={{ color: 'text.secondary', ml: 1 }}>
@@ -73,11 +73,14 @@ export function ConversionQueue({ queue }) {
         </Button>
         <StickerButton
           sticker="blue"
+          aria-label={doneCount > 1 ? 'Download all as ZIP' : 'Download'}
           startIcon={<DownloadRoundedIcon sx={{ fontSize: 20 }} />}
           disabled={doneCount === 0}
           onClick={downloadAll}
         >
-          {doneCount > 1 ? 'Download all (ZIP)' : 'Download'}
+          <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+            {doneCount > 1 ? 'Download all (ZIP)' : 'Download'}
+          </Box>
         </StickerButton>
       </Box>
 

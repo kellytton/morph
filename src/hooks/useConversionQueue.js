@@ -209,13 +209,13 @@ export function useConversionQueue() {
     [runItem],
   )
 
-  const cancelItem = useCallback(
-    (id) => {
-      canceledRef.current.add(id)
-      patch(id, { status: STATUS.CANCELED, progress: 0 })
-    },
-    [patch],
-  )
+  // Cancel = discard the in-flight result AND drop the row from the queue, so
+  // there's no leftover "canceled" clutter. The canceledRef guard makes the
+  // still-running conversion bail when it completes.
+  const cancelItem = useCallback((id) => {
+    canceledRef.current.add(id)
+    setItems((prev) => prev.filter((it) => it.id !== id))
+  }, [])
 
   const retryItem = useCallback(
     (id) => {

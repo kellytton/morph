@@ -198,17 +198,38 @@ export function QueueItem({ item, onDownload, onCancel, onRetry, onRemove, onExp
   const isDone = item.status === STATUS.DONE
   const isError = item.status === STATUS.ERROR
 
+  // After a few seconds of processing, reassure the user it's still working —
+  // this naturally only appears for slow (media) items; fast image ops finish
+  // first. We don't show a time *estimate* (browser rates are erratic and a
+  // wrong countdown erodes trust) — just honest reassurance. Gated on
+  // isConverting so a stale flag never shows after the item finishes.
+  const [slowElapsed, setSlowElapsed] = useState(false)
+  useEffect(() => {
+    if (!isConverting) return undefined
+    const t = setTimeout(() => setSlowElapsed(true), 5000)
+    return () => {
+      clearTimeout(t)
+      setSlowElapsed(false)
+    }
+  }, [isConverting])
+  const slow = isConverting && slowElapsed
+
   // Ticket accent uses the target format's sticker color.
   const accent = getFormat(item.to).sticker
 
   return (
     <Paper
       sx={(theme) => ({
-        p: 2,
-        pl: 2.5,
+        p: { xs: 1.5, sm: 2 },
+        pl: { xs: 2, sm: 2.5 },
+        // Mobile: stack the info row over an actions row so nothing competes
+        // for horizontal space. Desktop: everything on one row.
         display: 'flex',
-        alignItems: 'center',
-        gap: 2,
+        flexDirection: { xs: 'column', sm: 'row' },
+        alignItems: { xs: 'stretch', sm: 'center' },
+        // Tighter vertical gap on mobile so the chip row sits close to the meta,
+        // reading as one cohesive card rather than two detached blocks.
+        gap: { xs: 0.75, sm: 2 },
         position: 'relative',
         overflow: 'visible',
         // Colored left-edge "ticket" accent in the target sticker color.
@@ -224,55 +245,107 @@ export function QueueItem({ item, onDownload, onCancel, onRetry, onRemove, onExp
         '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
       })}
     >
-      <Box sx={{ position: 'relative' }}>
-        <Thumb file={item.file} onExpand={onExpand ? () => onExpand(item) : undefined} />
-        {/* Celebration burst anchored to the thumbnail on success. */}
-        {isDone && <StarBurst />}
-      </Box>
+      {/* Info row: thumbnail + name/meta. On mobile this is the top row. */}
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1.25, sm: 2 }, minWidth: 0, flex: 1 }}>
+        <Box sx={{ position: 'relative' }}>
+          <Thumb file={item.file} onExpand={onExpand ? () => onExpand(item) : undefined} />
+          {/* Celebration burst anchored to the thumbnail on success. */}
+          {isDone && <StarBurst />}
+        </Box>
 
-      <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography noWrap sx={{ fontWeight: 700 }}>
-          {item.file.name}
-        </Typography>
-        <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 500 }}>
-          {item.mode === 'compress'
-            ? `${item.from.toUpperCase()} · optimized`
-            : `${item.from.toUpperCase()} → ${item.to.toUpperCase()}`}
-          {' · '}
-          {formatBytes(item.file.size)}
-          {isDone && (
-            <> {'→ '}<Box component="span" sx={{ color: 'text.primary', fontWeight: 700 }}>{formatBytes(item.result.size)}</Box></>
-          )}
-          {isDone && item.result.width > 0 && (
-            <Box component="span" sx={{ opacity: 0.75 }}>
-              {'  ·  '}
-              {item.result.width}×{item.result.height}
-            </Box>
-          )}
-        </Typography>
-
-        {isConverting && (
-          <LinearProgress
-            variant="determinate"
-            value={item.progress}
-            sx={{
-              mt: 1,
-              height: 8,
-              borderRadius: 999,
-              bgcolor: 'action.hover',
-              '& .MuiLinearProgress-bar': { borderRadius: 999 },
-            }}
-          />
-        )}
-        {isError && (
-          <Typography variant="body2" sx={{ color: 'error.main', fontWeight: 600, mt: 0.5 }}>
-            {item.error}
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Typography noWrap sx={{ fontWeight: 700 }}>
+            {item.file.name}
           </Typography>
-        )}
+          <Typography
+            variant="body2"
+            sx={{
+              color: 'text.secondary',
+              fontWeight: 500,
+              lineHeight: 1.4,
+              // Wrap between the conversion facts (never mid-token, so units like
+              // "51.7 KB" stay whole) — all info stays visible over 1–2 lines.
+              wordBreak: 'normal',
+              overflowWrap: 'normal',
+            }}
+          >
+            {/* Format pair (e.g. PNG → WEBP, or "PNG · optimized"). */}
+            <Box component="span" sx={{ whiteSpace: 'nowrap' }}>
+              {item.mode === 'compress'
+                ? `${item.from.toUpperCase()} · optimized`
+                : `${item.from.toUpperCase()} → ${item.to.toUpperCase()}`}
+            </Box>{' · '}
+            {/* Original size (kept whole). */}
+            <Box component="span" sx={{ whiteSpace: 'nowrap' }}>{formatBytes(item.file.size)}</Box>
+            {isDone && (
+              <>
+                {' → '}
+                <Box component="span" sx={{ whiteSpace: 'nowrap', color: 'text.primary', fontWeight: 700 }}>
+                  {formatBytes(item.result.size)}
+                </Box>
+              </>
+            )}
+            {/* Output dimensions — tertiary info, dimmed so a wrap here reads as
+                deliberate supplementary detail rather than an accidental break. */}
+            {isDone && item.result.width > 0 && (
+              <Box component="span" sx={{ whiteSpace: 'nowrap', opacity: 0.6 }}>
+                {' · '}
+                {item.result.width}×{item.result.height}
+              </Box>
+            )}
+          </Typography>
+
+          {isConverting && (
+            <LinearProgress
+              // GIF (two-pass) can't report linear progress, so animate an
+              // indeterminate bar rather than show a false 100%-then-restart.
+              variant={item.params?.indeterminate ? 'indeterminate' : 'determinate'}
+              value={item.params?.indeterminate ? undefined : item.progress}
+              sx={{
+                mt: 1,
+                height: 8,
+                borderRadius: 999,
+                bgcolor: 'action.hover',
+                '& .MuiLinearProgress-bar': { borderRadius: 999 },
+              }}
+            />
+          )}
+          {slow && (
+            <Typography
+              variant="body2"
+              sx={{ color: 'text.secondary', fontWeight: 500, mt: 0.5, fontStyle: 'italic' }}
+            >
+              Still working — larger files can take a moment.
+            </Typography>
+          )}
+          {isError && (
+            <Typography variant="body2" sx={{ color: 'error.main', fontWeight: 600, mt: 0.5 }}>
+              {item.error}
+            </Typography>
+          )}
+        </Box>
       </Box>
 
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
-        <StatusPill item={item} />
+      {/* Actions row: status pill + buttons. On mobile it's its own full-width
+          row (pill left-aligned, buttons pushed right); on desktop it sits
+          inline at the end. */}
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 0.5,
+          flexShrink: 0,
+          // Full-width on mobile so the pill sits at the left and buttons right.
+          width: { xs: '100%', sm: 'auto' },
+        }}
+      >
+        {!isConverting && (
+          <Box sx={{ mr: { sm: 0.5 } }}>
+            <StatusPill item={item} />
+          </Box>
+        )}
+        {/* Push the action buttons to the right edge on mobile. */}
+        <Box sx={{ flex: 1, display: { xs: 'block', sm: 'none' } }} />
 
         {isDone && (
           <Tooltip title="Download">

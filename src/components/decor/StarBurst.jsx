@@ -46,6 +46,11 @@ export function StarBurst() {
         height: 0,
         pointerEvents: 'none',
         zIndex: 2,
+        // The particles fly outward past this 0×0 origin. `contain: layout size`
+        // keeps that overflow from expanding the page's scroll area (which was
+        // adding empty space below the footer). Purely visual — the stars still
+        // render outside via overflow: visible on the particle boxes.
+        contain: 'layout size',
       }}
     >
       {PARTICLES.map((p, i) => (

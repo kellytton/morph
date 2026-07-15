@@ -6,13 +6,17 @@ function StatCard({ label, value, accent }) {
   return (
     <Paper
       sx={(theme) => ({
-        p: 2.5,
+        p: { xs: 1.75, sm: 2.5 },
         textAlign: 'center',
         border: accent ? `2px solid ${theme.palette.primary.main}` : undefined,
       })}
     >
-      <Typography sx={{ fontSize: 30, fontWeight: 700, lineHeight: 1.1 }}>{value}</Typography>
-      <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 600, mt: 0.5 }}>
+      <Typography sx={{ fontSize: { xs: 20, sm: 30 }, fontWeight: 700, lineHeight: 1.15 }}>
+        {value}
+      </Typography>
+      <Typography
+        sx={{ fontSize: { xs: 12, sm: 14 }, color: 'text.secondary', fontWeight: 600, mt: 0.5 }}
+      >
         {label}
       </Typography>
     </Paper>
