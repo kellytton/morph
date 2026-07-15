@@ -25,10 +25,20 @@ function Swatch({ colorKey }) {
   )
 }
 
-function MenuOption({ label, sticker, onClick }) {
+function MenuOption({ label, sticker, href, onClick }) {
+  // Render as a real <a> so cmd/ctrl/middle-click opens the tool in a new tab
+  // and the URL is real. A plain left-click is intercepted for in-app (no
+  // reload) navigation; modified clicks fall through to the browser.
+  const handleClick = (e) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return
+    e.preventDefault()
+    onClick?.()
+  }
   return (
     <ButtonBase
-      onClick={onClick}
+      component="a"
+      href={href}
+      onClick={handleClick}
       sx={{
         justifyContent: 'flex-start',
         gap: 1,
@@ -39,6 +49,7 @@ function MenuOption({ label, sticker, onClick }) {
         fontSize: 15,
         fontWeight: 500,
         color: 'text.primary',
+        textDecoration: 'none',
         transition: 'background-color 120ms ease, transform 120ms ease',
         '&:hover': { bgcolor: 'action.hover', transform: 'translateX(2px)' },
       }}
@@ -67,6 +78,7 @@ export function NavMenu({
   getItems,
   renderLabel,
   getSticker,
+  getHref,
   onSelect,
 }) {
   const handleSelect = (item) => {
@@ -114,6 +126,7 @@ export function NavMenu({
                       key={idx}
                       label={renderLabel(item)}
                       sticker={getSticker?.(item)}
+                      href={getHref?.(item)}
                       onClick={() => handleSelect(item)}
                     />
                   ))}

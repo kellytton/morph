@@ -15,7 +15,9 @@ import {
   convertItemLabel,
   convertItemSticker,
   compressItemSticker,
+  convertItemToConversion,
 } from '../../config/conversions'
+import { hrefForSelection } from '../../config/routing'
 import { isEncodable, isMediaFormat } from '../../converters/registry'
 
 // A plain image-target convert item (e.g. { target: 'avif' }) is only usable if
@@ -38,25 +40,46 @@ function compressMenuItems(category) {
   )
 }
 
-function NavItem({ label, open, active, onClick }) {
+// The sticker swatch each nav section wears when active, so the highlighted tab
+// reads as a placed pastel sticker in the site's palette.
+const SECTION_STICKER = { convert: 'blue', merge: 'lilac', compress: 'mint' }
+
+function NavItem({ label, open, active, sticker, onClick }) {
   return (
     <ButtonBase
       onClick={onClick}
       aria-haspopup="menu"
       aria-expanded={open}
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 0.25,
-        px: 1,
-        py: 0.5,
-        borderRadius: 2,
-        fontSize: 22,
-        fontWeight: 700,
-        color: 'text.primary',
-        opacity: active ? 1 : 0.7,
-        transition: 'transform 140ms ease, opacity 140ms ease',
-        '&:hover': { transform: 'translateY(-1px)', opacity: 1 },
+      aria-current={active ? 'page' : undefined}
+      sx={(theme) => {
+        const s = theme.morph.sticker
+        return {
+          display: 'flex',
+          alignItems: 'center',
+          gap: 0.25,
+          pl: active ? 1.5 : 1,
+          pr: active ? 1.25 : 1,
+          py: 0.5,
+          borderRadius: 999,
+          fontSize: 22,
+          fontWeight: 700,
+          color: 'text.primary',
+          // Active: a placed pastel sticker — swatch fill, die-cut peel border,
+          // soft shadow, slight lift. Inactive: bare text, dimmed.
+          bgcolor: active ? theme.morph.stickers[sticker] : 'transparent',
+          border: `2px solid ${active ? s.peel : 'transparent'}`,
+          boxShadow: active ? s.shadow : 'none',
+          opacity: active ? 1 : 0.7,
+          transform: active ? 'translateY(-1px)' : 'none',
+          transition:
+            'transform 160ms cubic-bezier(0.34, 1.56, 0.64, 1), opacity 140ms ease, background-color 180ms ease, box-shadow 180ms ease',
+          '&:hover': {
+            opacity: 1,
+            transform: 'translateY(-2px)',
+            boxShadow: active ? s.shadowHover : 'none',
+          },
+          '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
+        }
       }}
     >
       {label}
@@ -77,17 +100,20 @@ const SECTION_MENUS = {
     getItems: convertMenuItems,
     renderLabel: (item) => convertItemLabel(item),
     getSticker: (item) => convertItemSticker(item),
+    getHref: (item) => hrefForSelection('convert', convertItemToConversion(item)),
   },
   compress: {
     categories: COMPRESS_MENU,
     getItems: compressMenuItems,
     renderLabel: (item) => item.label,
     getSticker: (item) => compressItemSticker(item),
+    getHref: (item) => hrefForSelection('compress', { format: item.format }),
   },
   merge: {
     categories: MERGE_MENU,
     getItems: (c) => c.items,
     renderLabel: (item) => item.label,
+    getHref: (item) => hrefForSelection('merge', { op: item.op }),
   },
 }
 
@@ -96,7 +122,7 @@ const SECTION_MENUS = {
  * menu), and the theme toggle. Selecting an item calls the matching handler,
  * which switches the app's active mode + selection.
  */
-export function Header({ mode, onSelectConvert, onSelectCompress, onSelectMerge }) {
+export function Header({ mode, onSelectConvert, onSelectCompress, onSelectMerge, onGoHome }) {
   const [menuAnchor, setMenuAnchor] = useState(null)
   const [openSection, setOpenSection] = useState(null)
   // Once the page scrolls a little, the sticky bar gains its frosted-glass
@@ -171,7 +197,7 @@ export function Header({ mode, onSelectConvert, onSelectCompress, onSelectMerge 
           'background-color 240ms ease, box-shadow 240ms ease, border-color 240ms ease, backdrop-filter 240ms ease',
       })}
     >
-      <Logo />
+      <Logo onGoHome={onGoHome} />
 
       <Stack
         direction="row"
@@ -183,6 +209,7 @@ export function Header({ mode, onSelectConvert, onSelectCompress, onSelectMerge 
             key={section}
             label={section}
             active={mode === section}
+            sticker={SECTION_STICKER[section]}
             open={openSection === section}
             onClick={handleNavClick(section)}
           />
@@ -212,6 +239,7 @@ export function Header({ mode, onSelectConvert, onSelectCompress, onSelectMerge 
             getItems={cfg.getItems}
             renderLabel={cfg.renderLabel}
             getSticker={cfg.getSticker}
+            getHref={cfg.getHref}
             onSelect={handlers[section]}
           />
         )

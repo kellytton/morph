@@ -13,6 +13,7 @@ export function AppLayout({
   onSelectConvert,
   onSelectCompress,
   onSelectMerge,
+  onGoHome,
   children,
 }) {
   return (
@@ -36,6 +37,7 @@ export function AppLayout({
         onSelectConvert={onSelectConvert}
         onSelectCompress={onSelectCompress}
         onSelectMerge={onSelectMerge}
+        onGoHome={onGoHome}
       />
       <Box
         component="main"

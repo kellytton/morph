@@ -131,28 +131,39 @@ export function MobileNav({ mode, sections, sectionMenus, handlers }) {
                       >
                         {category.label}
                       </Typography>
-                      {cfg.getItems(category).map((item, idx) => (
-                        <ButtonBase
-                          key={idx}
-                          onClick={() => handleSelect(section)(item)}
-                          sx={{
-                            width: '100%',
-                            justifyContent: 'flex-start',
-                            gap: 1,
-                            pl: 2,
-                            pr: 1,
-                            py: 0.75,
-                            borderRadius: 2,
-                            fontSize: 15,
-                            fontWeight: 500,
-                            color: 'text.primary',
-                            '&:hover': { bgcolor: 'action.hover' },
-                          }}
-                        >
-                          <Swatch colorKey={cfg.getSticker?.(item)} />
-                          {cfg.renderLabel(item)}
-                        </ButtonBase>
-                      ))}
+                      {cfg.getItems(category).map((item, idx) => {
+                        const href = cfg.getHref?.(item)
+                        return (
+                          <ButtonBase
+                            key={idx}
+                            component="a"
+                            href={href}
+                            onClick={(e) => {
+                              // Let modified clicks open a new tab natively.
+                              if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return
+                              e.preventDefault()
+                              handleSelect(section)(item)
+                            }}
+                            sx={{
+                              width: '100%',
+                              justifyContent: 'flex-start',
+                              gap: 1,
+                              pl: 2,
+                              pr: 1,
+                              py: 0.75,
+                              borderRadius: 2,
+                              fontSize: 15,
+                              fontWeight: 500,
+                              color: 'text.primary',
+                              textDecoration: 'none',
+                              '&:hover': { bgcolor: 'action.hover' },
+                            }}
+                          >
+                            <Swatch colorKey={cfg.getSticker?.(item)} />
+                            {cfg.renderLabel(item)}
+                          </ButtonBase>
+                        )
+                      })}
                     </Box>
                   ))}
                 </Box>
