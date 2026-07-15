@@ -19,6 +19,14 @@ body,
   min-height: 100dvh;
 }
 
+/* Always reserve room for the vertical scrollbar so pages that don't need one
+   don't widen the viewport and shift centered content sideways. Only matters
+   on desktop with classic (non-overlay) scrollbars — hence the desktop-only
+   symptom. */
+html {
+  scrollbar-gutter: stable;
+}
+
 /* Decorative stars/bursts can extend past the right edge; never let them (or
    anything) create a horizontal scrollbar. `clip` doesn't establish a scroll
    container, so sticky positioning still works. */
