@@ -152,6 +152,12 @@ export function createMorphTheme(mode) {
         },
       },
       MuiMenu: {
+        // Don't lock body scroll when a menu opens. MUI's default lock hides the
+        // page scrollbar and adds a compensating padding-right to <body>, which
+        // shifts the whole centered layout sideways on desktop (where a classic,
+        // non-overlay scrollbar exists to compensate for). Disabling the lock
+        // keeps the scrollbar in place so nothing moves.
+        defaultProps: { disableScrollLock: true },
         styleOverrides: {
           paper: {
             border: `2px solid ${p.text}`,
@@ -159,6 +165,17 @@ export function createMorphTheme(mode) {
             boxShadow: `0 12px 30px ${alpha(p.text, 0.18)}`,
           },
         },
+      },
+      // Same reasoning as MuiMenu: disable body-scroll-lock so opening a
+      // dialog/popover/modal never shifts the centered layout.
+      MuiModal: {
+        defaultProps: { disableScrollLock: true },
+      },
+      MuiDialog: {
+        defaultProps: { disableScrollLock: true },
+      },
+      MuiPopover: {
+        defaultProps: { disableScrollLock: true },
       },
     },
   })
