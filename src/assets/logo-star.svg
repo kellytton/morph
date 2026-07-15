@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120">
+  <defs>
+    <linearGradient id="body" x1="30%" y1="18%" x2="72%" y2="88%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="38%" stop-color="#f8a8d0"/>
+      <stop offset="100%" stop-color="#f8a8d0"/>
+    </linearGradient>
+    <radialGradient id="rim" cx="50%" cy="46%" r="58%">
+      <stop offset="72%" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.85"/>
+    </radialGradient>
+    <radialGradient id="gloss" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="4" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Star geometry mapped into a 10px-padded 120 box (10..110 => scale 1.0, translate 10) -->
+  <g filter="url(#glow)" transform="translate(10 10) scale(1.0)">
+    <path id="star" d="
+      M50 10 C54 10 57 13 59 20 L64 35 C66 41 69 43 75 44 L88 46
+      C95 47 98 53 93 58 L83 68 C79 72 78 76 79 82 L81 92
+      C82 99 76 103 70 99 L58 93 C53 90 47 90 42 93 L30 99
+      C24 103 18 99 19 92 L21 82 C22 76 21 72 17 68 L7 58
+      C2 53 5 47 12 46 L25 44 C31 43 34 41 36 35 L41 20
+      C43 13 46 10 50 10 Z" fill="url(#body)"/>
+    <use href="#star" fill="url(#rim)"/>
+    <ellipse cx="42" cy="34" rx="15" ry="10" fill="url(#gloss)" transform="rotate(-20 42 34)"/>
+    <circle cx="62" cy="30" r="3.2" fill="#ffffff" fill-opacity="0.8"/>
+  </g>
+</svg>
