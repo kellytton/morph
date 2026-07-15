@@ -42,6 +42,10 @@ export default function App() {
       setMode('compress')
     }
   }
+  // In-workspace switch of what we're compressing (no nav menu needed).
+  const handleChangeCompress = (nextFormat) => {
+    if (nextFormat) setCompressSel({ format: nextFormat })
+  }
 
   // Merge menu.
   const handleSelectMerge = (item) => {
@@ -65,6 +69,7 @@ export default function App() {
         mergeSel={mergeSel}
         onChangeTarget={handleChangeTarget}
         onChangeConversion={handleChangeConversion}
+        onChangeCompress={handleChangeCompress}
       />
     </AppLayout>
   )

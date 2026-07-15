@@ -15,6 +15,27 @@ import {
   convertItemSticker,
   compressItemSticker,
 } from '../../config/conversions'
+import { isEncodable, isMediaFormat } from '../../converters/registry'
+
+// A plain image-target convert item (e.g. { target: 'avif' }) is only usable if
+// this browser can actually encode it — otherwise it would dead-end on a
+// "coming soon" panel. Filter those out so the menu never offers an option the
+// browser can't fulfil. Document items (doc:true) and media targets route to
+// other workspaces and are always kept.
+function convertMenuItems(category) {
+  return category.items.filter((item) => {
+    if (item.doc || !item.target || isMediaFormat(item.target)) return true
+    return isEncodable(item.target)
+  })
+}
+
+// Same idea for compress: drop an image format this browser can't re-encode
+// (e.g. AVIF on older Safari) so it never dead-ends. Media formats are kept.
+function compressMenuItems(category) {
+  return category.items.filter(
+    (item) => isMediaFormat(item.format) || isEncodable(item.format),
+  )
+}
 
 function NavItem({ label, open, active, onClick }) {
   return (
@@ -52,13 +73,13 @@ function NavItem({ label, open, active, onClick }) {
 const SECTION_MENUS = {
   convert: {
     categories: CONVERSION_MENU,
-    getItems: (c) => c.items,
+    getItems: convertMenuItems,
     renderLabel: (item) => convertItemLabel(item),
     getSticker: (item) => convertItemSticker(item),
   },
   compress: {
     categories: COMPRESS_MENU,
-    getItems: (c) => c.items,
+    getItems: compressMenuItems,
     renderLabel: (item) => item.label,
     getSticker: (item) => compressItemSticker(item),
   },

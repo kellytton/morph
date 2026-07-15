@@ -253,8 +253,9 @@ export const DEFAULT_CONVERSION = { from: "png", to: "webp" };
 
 /**
  * Menu structure for the "compress" mega-menu. Each item shrinks a file while
- * keeping its format. `format` is the input/output format id. Image formats
- * are functional; documents/media are placeholders for now.
+ * keeping its format. `format` is the input/output format id. Only formats we
+ * can actually compress are listed (PDF compression isn't offered yet, so it's
+ * intentionally absent rather than shown as a dead-end).
  */
 export const COMPRESS_MENU = [
   {
@@ -266,11 +267,6 @@ export const COMPRESS_MENU = [
       { format: "webp", label: "Compress WebP" },
       { format: "avif", label: "Compress AVIF" },
     ],
-  },
-  {
-    id: "documents",
-    label: "documents",
-    items: [{ format: "pdf", label: "Compress PDF" }],
   },
   {
     id: "media",
@@ -345,6 +341,12 @@ export function convertItemSticker(item) {
 export function compressItemSticker(item) {
   return getFormat(item.format).sticker;
 }
+
+/** Every format the compress menu offers, flat and in menu order. Used by the
+ * in-workspace format switcher so it stays in sync with the nav menu. */
+export const COMPRESS_FORMATS = COMPRESS_MENU.flatMap((c) =>
+  c.items.map((it) => it.format),
+);
 
 /**
  * Resolve a convert-menu item into a { from, to } conversion. For plain target

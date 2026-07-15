@@ -98,7 +98,11 @@ function MergePdfWorkspace() {
     }
   }
 
-  const mergeDisabled = busy || (arrange === 'pages' && pageCount === 0)
+  // Disable Merge until it can actually produce something: 2+ files in "whole
+  // files" mode, or at least one page in "rearrange pages" mode.
+  const mergeDisabled =
+    busy ||
+    (arrange === 'pages' ? pageCount === 0 : files.length < 2)
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, pt: { xs: 3, md: 6 } }}>

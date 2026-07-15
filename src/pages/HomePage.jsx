@@ -17,9 +17,10 @@ export function HomePage({
   mergeSel,
   onChangeTarget,
   onChangeConversion,
+  onChangeCompress,
 }) {
   if (mode === 'compress') {
-    return <CompressWorkspace selection={compressSel} />
+    return <CompressWorkspace selection={compressSel} onChangeFormat={onChangeCompress} />
   }
   if (mode === 'merge') {
     return <MergeWorkspace selection={mergeSel} />

@@ -13,7 +13,8 @@ export function MediaTargetSelector({ to, onChangeTarget }) {
   const [open, setOpen] = useState(false)
   const [anchor, setAnchor] = useState(null)
 
-  // From the target's family, minus the current target.
+  // Options are every target in the current target's family (video/gif or
+  // audio), minus the current one — the family is fully determined by `to`.
   const options = mediaPickerOptions(to, to)
 
   return (

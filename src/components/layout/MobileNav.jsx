@@ -39,6 +39,12 @@ export function MobileNav({ mode, sections, sectionMenus, handlers }) {
   // Which section accordion is expanded; default to the active mode.
   const [expanded, setExpanded] = useState(mode)
 
+  // Sync the expanded accordion to the current mode when the drawer opens, so
+  // reopening after a mode change shows the section you're actually in.
+  const openDrawer = () => {
+    setExpanded(mode)
+    setOpen(true)
+  }
   const close = () => setOpen(false)
 
   const handleSelect = (section) => (item) => {
@@ -50,7 +56,7 @@ export function MobileNav({ mode, sections, sectionMenus, handlers }) {
     <Box sx={{ display: { xs: 'flex', sm: 'none' } }}>
       <IconButton
         aria-label="Open navigation menu"
-        onClick={() => setOpen(true)}
+        onClick={openDrawer}
         sx={{ color: 'text.primary' }}
       >
         <MenuRoundedIcon />
