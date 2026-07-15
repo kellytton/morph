@@ -6,6 +6,7 @@ import ReplayRoundedIcon from '@mui/icons-material/ReplayRounded'
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded'
 import ErrorOutlineRoundedIcon from '@mui/icons-material/ErrorOutlineRounded'
 import ImageRoundedIcon from '@mui/icons-material/ImageRounded'
+import ZoomInRoundedIcon from '@mui/icons-material/ZoomInRounded'
 import { STATUS } from '../../hooks/useConversionQueue'
 import { formatBytes, percentChange } from '../../utils/format'
 import { StarBurst } from '../decor/StarBurst'
@@ -31,11 +32,28 @@ function useObjectUrl(file) {
   return isImage ? url : null
 }
 
-function Thumb({ file }) {
+function Thumb({ file, onExpand }) {
   const url = useObjectUrl(file)
+  // Only clickable when there's an image to enlarge.
+  const clickable = Boolean(url && onExpand)
   return (
     <Box
+      {...(clickable
+        ? {
+            role: 'button',
+            tabIndex: 0,
+            'aria-label': 'Expand preview',
+            onClick: onExpand,
+            onKeyDown: (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                onExpand()
+              }
+            },
+          }
+        : {})}
       sx={(theme) => ({
+        position: 'relative',
         width: 60,
         height: 60,
         borderRadius: '16px',
@@ -48,15 +66,45 @@ function Thumb({ file }) {
         // Sticker-style peel edge on the thumbnail.
         border: `2px solid ${theme.morph.sticker.peel}`,
         boxShadow: theme.morph.sticker.shadow,
+        cursor: clickable ? 'zoom-in' : 'default',
+        outline: 'none',
+        transition: 'transform 160ms ease',
+        '& .thumb-zoom': { opacity: 0 },
+        ...(clickable && {
+          '@media (hover: hover)': {
+            '&:hover': { transform: 'scale(1.04)' },
+            '&:hover .thumb-zoom': { opacity: 1 },
+          },
+          '&:focus-visible': { boxShadow: `0 0 0 2px ${theme.palette.primary.main}` },
+        }),
       })}
     >
       {url ? (
-        <Box
-          component="img"
-          src={url}
-          alt=""
-          sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-        />
+        <>
+          <Box
+            component="img"
+            src={url}
+            alt=""
+            sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          />
+          {clickable && (
+            <Box
+              className="thumb-zoom"
+              aria-hidden
+              sx={{
+                position: 'absolute',
+                inset: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                bgcolor: 'rgba(0,0,0,0.35)',
+                transition: 'opacity 160ms ease',
+              }}
+            >
+              <ZoomInRoundedIcon sx={{ color: '#fff', fontSize: 22 }} />
+            </Box>
+          )}
+        </>
       ) : (
         <ImageRoundedIcon sx={{ color: 'text.secondary' }} />
       )}
@@ -145,7 +193,7 @@ function StatusPill({ item }) {
  * progress bar while converting, size delta on completion, and per-item
  * actions (download / retry / remove). Pops a star-burst on success.
  */
-export function QueueItem({ item, onDownload, onCancel, onRetry, onRemove }) {
+export function QueueItem({ item, onDownload, onCancel, onRetry, onRemove, onExpand }) {
   const isConverting = item.status === STATUS.CONVERTING || item.status === STATUS.PENDING
   const isDone = item.status === STATUS.DONE
   const isError = item.status === STATUS.ERROR
@@ -177,7 +225,7 @@ export function QueueItem({ item, onDownload, onCancel, onRetry, onRemove }) {
       })}
     >
       <Box sx={{ position: 'relative' }}>
-        <Thumb file={item.file} />
+        <Thumb file={item.file} onExpand={onExpand ? () => onExpand(item) : undefined} />
         {/* Celebration burst anchored to the thumbnail on success. */}
         {isDone && <StarBurst />}
       </Box>

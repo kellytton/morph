@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Box, Stack, ButtonBase } from '@mui/material'
+import { alpha } from '@mui/material/styles'
 import ArrowDropDownRoundedIcon from '@mui/icons-material/ArrowDropDownRounded'
 import ArrowDropUpRoundedIcon from '@mui/icons-material/ArrowDropUpRounded'
 import { Logo } from './Logo'
@@ -98,6 +99,16 @@ const SECTION_MENUS = {
 export function Header({ mode, onSelectConvert, onSelectCompress, onSelectMerge }) {
   const [menuAnchor, setMenuAnchor] = useState(null)
   const [openSection, setOpenSection] = useState(null)
+  // Once the page scrolls a little, the sticky bar gains its frosted-glass
+  // backing so content reads cleanly beneath it; at the very top it stays
+  // transparent so the hero isn't covered by a heavy band.
+  const [scrolled, setScrolled] = useState(false)
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8)
+    onScroll() // sync on mount (e.g. restored scroll position)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   const handleNavClick = (section) => (e) => {
     if (openSection === section) {
@@ -123,13 +134,42 @@ export function Header({ mode, onSelectConvert, onSelectCompress, onSelectMerge 
   return (
     <Box
       component="header"
-      sx={{
+      sx={(theme) => ({
+        position: 'sticky',
+        top: 0,
+        zIndex: theme.zIndex.appBar,
         display: 'flex',
         alignItems: 'center',
         gap: { xs: 2, md: 4 },
         px: { xs: 2, md: 4 },
         py: 2.5,
-      }}
+        // Frosted-glass backing that fades in once scrolled; transparent at the
+        // top so it floats over the hero. Light mode gets a MORE translucent
+        // fill + stronger blur: white-on-cream is low contrast, so the card's
+        // 0.7-opacity glass reads as a near-solid bar — dialing the surface down
+        // to ~0.5 lets the blur/stars actually show through, so it looks like
+        // glass (as dark mode already does).
+        backgroundColor: scrolled
+          ? theme.palette.mode === 'light'
+            ? alpha(theme.palette.background.default, 0.62)
+            : theme.morph.glass.bg
+          : 'transparent',
+        backdropFilter: scrolled
+          ? theme.palette.mode === 'light'
+            ? 'blur(18px) saturate(1.8)'
+            : theme.morph.glass.blur
+          : 'none',
+        WebkitBackdropFilter: scrolled
+          ? theme.palette.mode === 'light'
+            ? 'blur(18px) saturate(1.8)'
+            : theme.morph.glass.blur
+          : 'none',
+        borderBottom: '1px solid',
+        borderColor: scrolled ? 'divider' : 'transparent',
+        boxShadow: scrolled ? theme.morph.glass.shadow : 'none',
+        transition:
+          'background-color 240ms ease, box-shadow 240ms ease, border-color 240ms ease, backdrop-filter 240ms ease',
+      })}
     >
       <Logo />
 

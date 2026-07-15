@@ -57,7 +57,10 @@ function drawableSize(source) {
  * formats (png/jpg/webp) plus hand-rolled BMP and ICO. `quality` (0..1)
  * applies to lossy formats. Returns { blob, width, height }.
  */
-async function encodeViaCanvas(source, to, { quality = 0.92, background } = {}) {
+async function encodeViaCanvas(source, to, opts) {
+  // Default to {} for both undefined AND null (a null params object flows in
+  // from optimize tasks that carry no quality) — `= {}` only catches undefined.
+  const { quality = 0.92, background } = opts ?? {}
   let { width, height } = drawableSize(source)
 
   // ICO must fit within 256×256 — scale down proportionally if needed.
@@ -138,7 +141,9 @@ export function makeImageConverter(to, defaults = {}) {
  */
 export function makeImageCompressor(format) {
   const mime = OUTPUT_MIME[format] || `image/${format}`
-  return async (file, { quality = 0.7, maxDimension } = {}) => {
+  return async (file, opts) => {
+    // `= {}` guards undefined but not null; optimize tasks pass null params.
+    const { quality = 0.7, maxDimension } = opts ?? {}
     const source = await decodeImage(file)
     let { width, height } = drawableSize(source)
 

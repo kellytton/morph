@@ -104,8 +104,8 @@ export function makeMediaConverter(from, to) {
  * bitrate). Returns (file, { quality (0..1), onProgress }) => { blob }.
  */
 export function makeMediaCompressor(format) {
-  return async (file, opts = {}) => {
-    const q = opts.quality ?? 0.6
+  return async (file, opts) => {
+    const q = opts?.quality ?? 0.6
     const input = `input.${MEDIA_EXT[format] ?? format}`
     const output = `output.${MEDIA_EXT[format] ?? format}`
     // Map quality → codec params. Lower quality = smaller file.

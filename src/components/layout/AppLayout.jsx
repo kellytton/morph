@@ -28,15 +28,15 @@ export function AppLayout({
       }}
     >
       <StarField />
-      {/* Content sits above the fixed star background via its own stacking. */}
-      <Box sx={{ position: 'relative', zIndex: 1 }}>
-        <Header
-          mode={mode}
-          onSelectConvert={onSelectConvert}
-          onSelectCompress={onSelectCompress}
-          onSelectMerge={onSelectMerge}
-        />
-      </Box>
+      {/* Header is position: sticky, so it must be a direct child of this
+          scrolling column (not wrapped in another positioned box, which would
+          trap the stick within that box's height). It sets its own z-index. */}
+      <Header
+        mode={mode}
+        onSelectConvert={onSelectConvert}
+        onSelectCompress={onSelectCompress}
+        onSelectMerge={onSelectMerge}
+      />
       <Box
         component="main"
         sx={{

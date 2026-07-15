@@ -101,7 +101,7 @@ export function useConversionQueue() {
         // (from→to). Both accept params (e.g. { quality }).
         let { blob, width, height } =
           mode === 'compress'
-            ? await compress(from, file, runParams)
+            ? await compress(from, file, runParams ?? {})
             : await convert(from, to, file, runParams ?? {})
         stop()
         if (canceledRef.current.has(id)) return

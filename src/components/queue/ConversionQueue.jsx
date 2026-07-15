@@ -1,8 +1,10 @@
+import { useState } from 'react'
 import { Box, Button, Stack, Typography, Fade } from '@mui/material'
 import DownloadRoundedIcon from '@mui/icons-material/DownloadRounded'
 import DeleteSweepRoundedIcon from '@mui/icons-material/DeleteSweepRounded'
 import { QueueItem } from './QueueItem'
 import { ConversionStats } from './ConversionStats'
+import { ImageCompareLightbox } from './ImageCompareLightbox'
 import { StickerButton } from '../common/StickerButton'
 import { STATUS } from '../../hooks/useConversionQueue'
 
@@ -12,9 +14,12 @@ import { STATUS } from '../../hooks/useConversionQueue'
  */
 export function ConversionQueue({ queue }) {
   const { items, downloadOne, downloadAll, cancelItem, retryItem, removeItem, clear } = queue
+  // Which item is shown enlarged in the compare lightbox (by id), or null.
+  const [expandedId, setExpandedId] = useState(null)
   if (items.length === 0) return null
 
   const doneCount = items.filter((it) => it.status === STATUS.DONE).length
+  const expanded = items.find((it) => it.id === expandedId) ?? null
 
   return (
     <Stack spacing={2.5}>
@@ -54,6 +59,7 @@ export function ConversionQueue({ queue }) {
                 onCancel={cancelItem}
                 onRetry={retryItem}
                 onRemove={removeItem}
+                onExpand={(it) => setExpandedId(it.id)}
               />
             </Box>
           </Fade>
@@ -61,6 +67,8 @@ export function ConversionQueue({ queue }) {
       </Stack>
 
       <ConversionStats items={items} />
+
+      <ImageCompareLightbox item={expanded} onClose={() => setExpandedId(null)} />
     </Stack>
   )
 }
