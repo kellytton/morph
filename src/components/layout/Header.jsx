@@ -84,9 +84,9 @@ function NavItem({ label, open, active, sticker, onClick }) {
     >
       {label}
       {open ? (
-        <ArrowDropUpRoundedIcon fontSize="small" />
+        <ArrowDropUpRoundedIcon sx={{ fontSize: 30 }} />
       ) : (
-        <ArrowDropDownRoundedIcon fontSize="small" />
+        <ArrowDropDownRoundedIcon sx={{ fontSize: 30 }} />
       )}
     </ButtonBase>
   )
